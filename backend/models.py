@@ -17,7 +17,7 @@ class User(models.Model):
     def asJSON(self):
         return utils.jsonify({
             "username": self.username,
-            "email":    self.username,
-            "age":      self.username,
+            "email":    self.email,
+            "age":      self.age,
             "sex":      self.sex,
         })
