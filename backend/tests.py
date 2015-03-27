@@ -77,11 +77,13 @@ class LoginTestCase(TestCase):
             "password": "bad password"
         })
 
-        print(views.login(response).content)
-        # self.assertEqual(views.login(response).content,
-        #                  self.user.asJSON().encode())
-
-
+        self.assertNotEqual(views.login(response).content,
+                            self.user.asJSON().encode())
+        self.assertEqual(views.login(response).content,
+                         utils.jsonify(errors.make_error(
+                            errors.get_error("login"),
+                            401,
+                            None)).encode())
 
 MOCK_REGISTER_DATA = add_dicts({
     "password_confirm": MOCK_USER_DATA["password"],
@@ -95,21 +97,38 @@ class RegisterTestCase(TestCase):
         reg = RegisterForm(MOCK_REGISTER_DATA)
 
         self.assertTrue(reg.is_valid())
-        print(reg.cleaned_data["user_object"].asJSON())
+        self.assertTrue(isinstance(reg.cleaned_data["user_object"], User))
 
     def test_reg_passmatch(self):
         tmp = dict(MOCK_REGISTER_DATA)
+        tmp["username"] += "_new"
         tmp["password_confirm"] = "bad match"
         reg = RegisterForm(tmp)
 
         self.assertEqual(reg.is_valid(), False)
         self.assertTrue(errors.get_error(
             "register_password_mismatch") in reg.errors.get("password"))
+        self.assertTrue(errors.get_error(
+            "register_password_mismatch") in reg.errors.get("password_confirm"))
 
     def test_reg_userexists(self):
-        reg = RegisterForm(MOCK_REGISTER_DATA)
-        reg.is_valid()
+        # First, register a user.
+        self.test_register_works()
+
+        # Then, try to register a user with the same name.
         reg = RegisterForm(MOCK_REGISTER_DATA)
 
         self.assertEqual(reg.is_valid(), False)
-        print(self.errors)
+        self.assertTrue(errors.get_error(
+            "register_username_exists") in reg.errors.get("username"))
+
+    def test_reg_view_ok(self):
+        tmp = dict(MOCK_REGISTER_DATA)
+        tmp["username"] += "_tmp"
+
+        client = RequestFactory()
+        response = client.post("/register", tmp)
+        self.assertEqual(views.register(response).content,
+                         User.objects.get(
+                            username=tmp["username"]
+                         ).asJSON().encode())
