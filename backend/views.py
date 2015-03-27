@@ -2,18 +2,26 @@ from django.core      import exceptions
 from django.shortcuts import render
 from django.http      import HttpResponse
 
-from backend import models
 from walktalk import utils
 from walktalk import errors
 
+from backend  import models
+from backend  import forms
+
 def login(request):
-    if request.method == "POST":
-        loginform = forms.LoginForm(request.GET)
+    if request.method != "POST":
+        return HttpResponse("Bad request: " + request.method, 405)
 
-        if loginform.is_valid():
-            return HttpResponse(loginform.user_object.asJSON())
-        else:
-            return HttpResponse(utils.jsonify(loginform.errors),
-                                status=loginform.errors["code"])
+    loginform = forms.LoginForm(request.POST)
 
-    return HttpResponse("Bad request.", 400)
+    if loginform.is_valid():
+        return HttpResponse(loginform.cleaned_data["user_object"].asJSON())
+    else:
+        return HttpResponse(utils.jsonify(loginform.errors),
+                            status=loginform.errors["code"])
+
+def register(request):
+    if request.method == "GET":
+        return HttpResponse("Bad request.", 405)    # Method not allowed
+
+
