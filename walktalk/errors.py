@@ -20,3 +20,10 @@ def convert_errors(django_errors, error_code=404):
         custom_error["error"] = django_errors[first_error]
 
     return custom_error
+
+def make_error(error_str, error_code, field):
+    return {
+        "error": error_str,
+        "code": error_code,
+        "field": field
+    }
