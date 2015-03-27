@@ -16,12 +16,19 @@ def login(request):
 
     if loginform.is_valid():
         return HttpResponse(loginform.cleaned_data["user_object"].asJSON())
-    else:
-        return HttpResponse(utils.jsonify(loginform.errors),
-                            status=loginform.errors["code"])
+
+    custom_error = errors.convert_errors(loginform.errors, 401)
+    return HttpResponse(utils.jsonify(custom_error),
+                        status=custom_error["code"])
 
 def register(request):
     if request.method == "GET":
         return HttpResponse("Bad request.", 405)    # Method not allowed
 
+    reqform = forms.RegisterForm(request.POST)
+    if reqform.is_valid():
+        return HttpResponse(reqform.cleaned_data["user_object"].asJSON())
 
+    custom_error = errors.convert_errors(reqform.errors, reqform.error_code)
+    return HttpResponse(utils.jsonify(custom_error),
+                        status=reqform.error_code)
