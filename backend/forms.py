@@ -7,11 +7,41 @@ from walktalk import errors
 class RegisterForm(forms.Form):
     username            = forms.CharField(label='Username', max_length=64)
     password            = forms.CharField(label='Password', max_length=256)
-    password_comfirm    = forms.CharField(label='Confirm Password', max_length=256)
+    password_confirm    = forms.CharField(label='Confirm Password', max_length=256)
     email               = forms.CharField(label='Email Address', max_length=128)
     age                 = forms.IntegerField(label='Age')
     sex                 = forms.ChoiceField(label='Sex',
                                             choices=models.User.SEX_CHOICES)
+
+    def clean_username(self):
+        print(self.cleaned_data["username"])
+
+        if models.User.objects.filter(
+            username=self.cleaned_data["username"]
+        ).count():
+            reqform.error_code = 409    # Conflict
+            raise forms.ValidationError(
+                errors.get_error("register_username_exists"))
+
+        return self.cleaned_data
+
+    def clean(self):
+        cleaned_data = super(forms.Form, self).clean()
+
+        if cleaned_data["password"] != cleaned_data["password_confirm"]:
+            self.add_error("password", forms.ValidationError(
+                errors.get_error("register_password_match")))
+            self.add_error("password_confirm", forms.ValidationError(
+                errors.get_error("register_password_match")))
+            self.error_code = 409   # Conflict
+
+        else:
+            tmp = dict(cleaned_data)
+            tmp.pop("password_confirm")
+            print("\n\n\nTEMPORARY", cleaned_data, "\n\n\n")
+            cleaned_data["user_object"] = models.User.objects.create(**tmp)
+
+        return cleaned_data
 
 class LoginForm(forms.Form):
     username            = forms.CharField(label='Username', max_length=64)
