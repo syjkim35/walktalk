@@ -17,8 +17,8 @@
 \pagestyle{fancy}
 
 \fancyhead{}
-\fancyhead[L]{Walk with Talk\\API Specification}
-% \fancyhead[R]{\texttt{cs70-iv}\\SID 25774340}
+\fancyhead[L]{Walk with Talk}
+\fancyhead[R]{API Specification}
 \setlength{\headheight}{27.2pt}
 
 \renewcommand{\headrulewidth}{0.2pt}
@@ -31,15 +31,17 @@
 \author{API Specification}
 \date{Last Updated: \today}
 
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+
 \newcommand{\g}{\texttt{GET}}
 \newcommand{\p}{\texttt{POST}}
-\renewcommand{\jsnull}{\texttt{null}}
-
-\definecolor{darkgreen}{rgb}{0,0.5,0}
+\newcommand{\jsnull}{\texttt{null}}
+\newcommand{\auth}{\texttt{\textcolor{darkgreen}{@}authorized}}
 
 \begin{document}
 \maketitle
 
+\noindent
 On error, end-points will return a JSON string describing the error in the
 following format:
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -53,21 +55,26 @@ field (such as a duplicate username), all fields should be highlighted and
 the \texttt{"field"} key will contain \jsnull. A full list of HTTP error code
 and their uses can be found
 \href{https://en.wikipedia.org/wiki/List_of_HTTP_status_codes}{here}.
-\\\\
-\begin{tabular}{@{} >{\ttfamily/}l |c| p{5in}}
+
+The indication that a URL is \auth{} means that it will return a 403 (forbidden)
+error unless there has previously been a successful login request sent.
+
+\begin{longtable}{@{} >{\ttfamily/}p{1in} | p{0.8in} | p{4.27in}}
 \hline
 URL & Methods & Description \\
 \hline
 login & \g, \p &
-Logs in a user. \newline
+Logs in a user.
+\newline\newline
 The \g{} action retrieves current user details. Results are returned in JSON
 format with the following fields:
-{\begin{verbatim}
+\begin{Verbatim}
   "username",
+  "email",
   "sex",
   "age"
-\end{verbatim}}
-\newline
+\end{Verbatim}
+%
 The same fields are expected during the \p{} action, in addition to password
 data in the \texttt{"password"} field. This is a SHA-256 hash of the data
 entered by the user into the form field.
@@ -78,12 +85,102 @@ with a \jsnull{} value for \texttt{"field"}. On success, there will be a code
 \\
 \hline
 register & \p &
-Registers a new user. \newline
+Registers a new user.
+\newline\newline
 The \p{} action will expect the same fields as \texttt{/login}, in addition to
 a \texttt{"password\_confirm"} field that follows the same characteristics as
 \texttt{"password"}.
 \newline\newline
-The submission will return a
+The submission will return a 409 if the username already exists, or if the
+passwords don't match. On success, there will the exact same value sent to the
+client as in the \texttt{/login} \g{} request.
+\\
+\hline
+schedule \newline \auth & \p, \g &
+Updates / Retrieves the current user's schedule.
+\newline\newline
+The \p{} action expects the following fields in the following format:
+\begin{Verbatim}
+  "username",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday"
+\end{Verbatim}
+%
+The username is self-explanatory, but the weekday fields require some more
+explanation. Each day is broken up into 30-minute discrete chunks. Each one of
+these is assigned a single bit, with a 1 indicating availability, and a 0
+indicating the opposite. Thus, each of these fields should be a bit-string of
+length 48:
+\[
+  \frac{24 \text{ hour day} \cdot 60 \text{ minutes an hour}}
+       {30 \text{ minute chunks}} = 48 \text{ chunks}
+\]
+So an example schedule (for one day) could be
+\begin{Verbatim}[commandchars=\\\{\}]
+  \footnotesize "monday": "000000110000011110001000010000011111100000000000"
+\end{Verbatim}
+%
+The \g{} action will return the same thing outlined in the \p{} section,
+in JSON format. If the user doesn't have a schedule yet, all 0's will be
+substituted for every day.
+\\
+\hline
+location \newline \auth & \p, \g &
+Updates / Retrieves the current user's location.
+\newline\newline
+The \p{} action expects the following fields:
+\begin{Verbatim}
+  "username",
+  "latitude",
+  "longitude"
+\end{Verbatim}
+%
+Both of the coordinate fields should be floating-point values. See the \g{}
+action below for the return value.
+\newline\newline
+The \g{} action will return the most-recent location for the given user in
+the same format as the \p{} submission above, in JSON format. If no such
+location has been given yet, the coordinate fields will contain \jsnull.
+\\
+\hline
+nearby & \g &
+Retrieves nearby ``walkers'' with matching schedules.
+\newline\newline
+% The \g{} action allows for the following \textit{optional} fields:
+% \begin{Verbatim}
+%   "",
+% \end{Verbatim}
+The \g{} action takes no parameters, and returns a JSON array of possible users
+with the following information:
+\begin{Verbatim}[commandchars=\\\{\}]
+  "nearby_users": [
+    "username_1" : 1.23, \textcolor{darkgreen}{// Distance}
+    "username_2" : 4.57
+  ]
+\end{Verbatim}
+No other information is provided about the users in order to ensure their
+privacy. Exact location information isn't provided, either, for the same reason.
+The front-end will have to make do with distances from the current user.
+The users will already be sorted from closest to furthest.
+\\
+\hline
+\end{longtable}
 
-\end{tabular}
+\subsection*{Handling ``Instant'' Scheduling}
+The user of the front-end client may want to find a walking buddy immediately,
+and there is no support for this directly through the API outlined above. An
+acceptable way of doing this would be to send four requests, as follows:
+\begin{itemize}
+\item \texttt{GET /schedule} and store the results.
+\item \texttt{POST /schedule} with only the current time block available
+\item \texttt{GET /nearby} to find everyone available right now
+\item \texttt{POST /schedule} to restore the original user schedule
+\end{itemize}
+
+
 \end{document}
