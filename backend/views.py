@@ -1,5 +1,7 @@
+import math
+
 from django.core      import exceptions
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http      import HttpResponse, HttpResponseRedirect
 
 from walktalk import utils
@@ -8,30 +10,10 @@ from walktalk import errors
 from backend  import models
 from backend  import forms
 
-def only_post(fn):
-    def wrapper(request, *args):
-        if request.method != "POST":
-            return HttpResponse("Bad request: " + str(request.method),
-                                status=405)
-
-        return fn(request, *args)
-
-    return wrapper
-
-def authorized(fn):
-    def wrapper(request, *args):
-        if "authorized" not in request.session:
-            return HttpResponse(utils.jsonify(
-                errors.make_error(errors.get_error("auth"), 403, None)))
-
-        return fn(request, *args)
-
-    return wrapper
-
 def home(request):
     return HttpResponseRedirect("/login")
 
-@only_post
+@utils.only_post
 def login(request):
     loginform = forms.LoginForm(request.POST)
 
@@ -44,7 +26,7 @@ def login(request):
     return HttpResponse(utils.jsonify(custom_error),
                         status=custom_error["code"])
 
-@only_post
+@utils.only_post
 def register(request):
     reqform = forms.RegisterForm(request.POST)
     if reqform.is_valid():
@@ -54,7 +36,7 @@ def register(request):
     return HttpResponse(utils.jsonify(custom_error),
                         status=reqform.error_code)
 
-# @authorized
+# @utils.authorized
 def schedule(request):
     if request.method == "GET":
         sched = models.Schedule.objects.filter(
@@ -87,6 +69,38 @@ def schedule(request):
     #     return HttpResponse(models.Schedule.asJSON(
     #         schedform.cleaned_data["schedule"]))
 
-    custom_error = errors.convert_errors(schedform.errors, schedform.error_code)
-    return HttpResponse(utils.jsonify(custom_error),
-                        status=schedform.error_code)
+    return HttpResponse("No.", status=403)
+    # custom_error = errors.convert_errors(schedform.errors, schedform.error_code)
+    # return HttpResponse(utils.jsonify(custom_error),
+    #                     status=schedform.error_code)
+
+@utils.only_get
+@utils.authorized
+def nearby(request):
+    if request.method == "GET":
+        user = request.session["user_object"]
+        loc  = get_object_or_404(models.Location, user=user)
+        print(loc)
+
+        # Naive user search
+        all_users = models.User.objects.all()
+
+        dist = lambda x, y: math.sqrt(
+            (x.latitude  - y.latitude) ** 2,
+            (x.longitude - y.longitude) ** 2)
+
+        potential = {}
+        for i in all_users:
+            temp_location = models.Location.objects.filter(user=i)
+            if not temp_location:
+                continue
+
+            d = dist(i, user)
+            if d < 5: # < pref.radius:
+                potential[i.username] = d
+
+        return HttpResponse(utils.jsonify({
+            "nearby_users": potential
+        }))
+
+    return HttpResponse("No.", status=403)

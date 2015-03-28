@@ -6,5 +6,6 @@ urlpatterns = patterns('',
     url(r'^login/', 'backend.views.login', name='login'),
     url(r'^register/', 'backend.views.register', name='register'),
     url(r'^schedule/', 'backend.views.schedule', name='schedule'),
+    url(r'^nearby/', 'backend.views.nearby', name='nearby'),
     # url(r'^admin/', include(admin.site.urls)),
 )
