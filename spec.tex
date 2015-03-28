@@ -158,15 +158,14 @@ Retrieves nearby ``walkers'' with matching schedules.
 The \g{} action takes no parameters, and returns a JSON array of possible users
 with the following information:
 \begin{Verbatim}[commandchars=\\\{\}]
-  "nearby_users": [
+  "nearby_users": \{
     "username_1" : 1.23, \textcolor{darkgreen}{// Distance}
     "username_2" : 4.57
-  ]
+  \}
 \end{Verbatim}
 No other information is provided about the users in order to ensure their
 privacy. Exact location information isn't provided, either, for the same reason.
 The front-end will have to make do with distances from the current user.
-The users will already be sorted from closest to furthest.
 \\
 \hline
 \end{longtable}
