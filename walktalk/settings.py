@@ -20,10 +20,8 @@ SECRET_KEY = 'k4(+efnumigtaufhg7yb=r=z=nm8k&e(2zu+8_*@+0y#tfnmbq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 TEMPLATE_DEBUG = True
-
-ALLOWED_HOSTS = [ "*" ]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -47,6 +45,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 ROOT_URLCONF = 'walktalk.urls'
 WSGI_APPLICATION = 'walktalk.wsgi.application'

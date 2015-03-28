@@ -44,7 +44,6 @@ class LoginTestCase(TestCase):
         self.assertTrue(isinstance(login.cleaned_data["user_object"], User))
         self.assertTrue(login.cleaned_data["user_object"].sex in [
             x[0] for x in User.SEX_CHOICES])
-        print(login.cleaned_data["user_object"].asJSON())
 
     def test_login_badpassword(self):
         login = LoginForm({
