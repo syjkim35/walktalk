@@ -13,7 +13,10 @@ def convert_errors(django_errors, error_code=404):
         field = None
         error = django_errors["__all__"][0]
     else:
-        first_error = django_errors.keys()[0]
+        for i in django_errors:
+            first_error = django_errors[i][0]
+            break
+
         field = first_error
         error = django_errors[first_error]
 

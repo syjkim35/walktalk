@@ -25,6 +25,7 @@ class RegisterForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(forms.Form, self).clean()
+        self.error_code = 200
 
         if cleaned_data["password"] != cleaned_data["password_confirm"]:
             self.add_error("password", forms.ValidationError(
