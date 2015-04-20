@@ -31,8 +31,13 @@ def login(request):
     return HttpResponse(utils.jsonify(custom_error),
                         status=custom_error["code"])
 
-@utils.only_post
+# @utils.only_post
 def register(request):
+    if request.method == "GET":
+        return render(request, "register.html", {
+            "register_form": forms.RegisterForm()
+        })
+
     reqform = forms.RegisterForm(request.POST)
     if reqform.is_valid():
         return HttpResponse(reqform.cleaned_data["user_object"].asJSON())

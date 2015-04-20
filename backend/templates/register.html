@@ -1,0 +1,91 @@
+{% extends "basepage.html" %}
+{% load staticfiles %}
+
+{% block js %}
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#newuser").on("click", function(e) {
+      $(".row").first().hide("slow");
+      $("#regform").show("slow");
+      e.preventDefault();
+      return false;
+    });
+
+    $("#signin").on("click", function(e) {
+      // $("#regform").show("slow");
+      return false;
+    });
+
+  });
+</script>
+{% endblock %}
+
+{% block body %}
+  <img width="640" height="507" src="{% static "img/logo.png" %}">
+  <div class="row">
+    <div class="col-xs-12 col-xs-push-2">
+      <button id="newuser" class="btn_walktalk">
+        Register
+      </button>
+    </div>
+    <div class="col-xs-12 col-xs-push-2">
+      <button id="signin" class="btn_walktalk">Sign In</button>
+    </div>
+  </div>
+
+  <form id="regform" class="form-horizontal"
+        action="/register/" method="POST" style="display: none;">
+  {% csrf_token %}
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-2">
+        <input type="text" class="btn_walktalk" id="reg_email"
+               name="email" placeholder="Enter Your Email">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-2">
+        <input type="text" class="btn_walktalk" id="reg_username"
+               name="username" placeholder="Choose a Username">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-2">
+        <input type="password" class="btn_walktalk" id="reg_pwd"
+               name="password" placeholder="Password">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-2">
+        <input type="password" class="btn_walktalk" id="reg_pwd_confirm"
+               name="password_confirm" placeholder="Confirm Password">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-2">
+        <input type="text" class="btn_walktalk" id="reg_age"
+               name="age" placeholder="Age">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-2">
+        <select id="reg_sex" name="sex" class="btn_walktalk">
+          <option value="M">Male</option>
+          <option value="F">Female</option>
+          <option value="O">Unspecified</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-xs-push-5">
+        <input type="submit" class="btn_walktalk_circle" value="Go!">
+      </div>
+    </div>
+  </form>
+{% endblock %}
