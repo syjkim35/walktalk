@@ -1,0 +1,61 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+  <script
+    src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
+  </script>
+  <script
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js">
+  </script>
+
+  {% block js %}
+  {% endblock %}
+
+  <title>Walk With Talk</title>
+
+  <style type="text/css">
+    body {
+      background-color: rgb(90, 190, 176);
+    }
+
+    .btn_walktalk,
+    .btn_walktalk_circle {
+      background-color: rgb(90, 190, 176);
+      text-decoration: none;
+      border: 3px solid white;
+      width: 400px;
+      margin: 20px auto 0 auto;
+      text-align: center;
+      font-size: 32px;
+      color: white;
+    }
+
+    .btn_walktalk {
+      border-radius: 3px;
+    }
+
+    .btn_walktalk_circle {
+      width: 75px;
+      border-radius: 50%;
+    }
+
+    {% block css %}
+    {% endblock %}
+  </style>
+</head>
+<body>
+  <div class="container">
+    {% block body %}
+    {% endblock %}
+  </div>
+</body>
+</html>
