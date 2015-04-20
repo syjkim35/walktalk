@@ -13,8 +13,13 @@ from backend  import forms
 def home(request):
     return HttpResponseRedirect("/login")
 
-@utils.only_post
+# @utils.only_post
 def login(request):
+    if request.method == "GET":
+        return render(request, "login.html", {
+            "login_form": forms.LoginForm()
+        })
+
     loginform = forms.LoginForm(request.POST)
 
     if loginform.is_valid():
@@ -36,7 +41,7 @@ def register(request):
     return HttpResponse(utils.jsonify(custom_error),
                         status=reqform.error_code)
 
-# @utils.authorized
+@utils.authorized
 def schedule(request):
     if request.method == "GET":
         sched = models.Schedule.objects.filter(
