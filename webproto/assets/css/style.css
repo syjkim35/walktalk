@@ -30,6 +30,10 @@ body, html {
 	text-align: center;
 }
 
+input:focus::-webkit-input-placeholder {
+    color: transparent;
+}
+
 #username {
 	top: 333px;
 }
